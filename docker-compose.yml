@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pcb-defect-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pcb_defects
+      POSTGRES_USER: pcb_user
+      POSTGRES_PASSWORD: pcb_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pcb_user -d pcb_defects"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

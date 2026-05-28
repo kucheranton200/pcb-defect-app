@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Defect {
+  id         String   @id @default(uuid())
+  imagePath  String
+  imageName  String
+  className  String
+  confidence Float
+  boxX1      Float
+  boxY1      Float
+  boxX2      Float
+  boxY2      Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

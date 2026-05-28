@@ -1,0 +1,150 @@
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100svh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.toolbar,
+.workspace,
+.side-panel,
+.defect-row,
+.login-form,
+.controls {
+  display: flex;
+  gap: 12px;
+}
+
+.toolbar {
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.login-form,
+.controls {
+  align-items: center;
+}
+
+input,
+button {
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-h);
+  font: 14px/1 var(--sans);
+  box-sizing: border-box;
+}
+
+input {
+  width: 160px;
+  padding: 0 10px;
+}
+
+button {
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.workspace {
+  align-items: stretch;
+  min-height: 420px;
+}
+
+.camera-panel {
+  flex: 1;
+  min-width: 0;
+  background: #111827;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.side-panel {
+  width: 260px;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.side-panel > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.defects-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.defect-row {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: left;
+}
+
+.defect-row img {
+  width: 84px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #111827;
+}
+
+.defect-row div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.defect-row code {
+  font-size: 12px;
+}
+
+@media (max-width: 800px) {
+  .toolbar,
+  .workspace,
+  .login-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  input,
+  button,
+  .side-panel {
+    width: 100%;
+  }
+
+  .camera-panel {
+    min-height: 300px;
+  }
+}

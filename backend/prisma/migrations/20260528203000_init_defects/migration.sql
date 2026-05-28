@@ -1,0 +1,15 @@
+CREATE TABLE "Defect" (
+    "id" TEXT NOT NULL,
+    "imagePath" TEXT NOT NULL,
+    "imageName" TEXT NOT NULL,
+    "className" TEXT NOT NULL,
+    "confidence" DOUBLE PRECISION NOT NULL,
+    "boxX1" DOUBLE PRECISION NOT NULL,
+    "boxY1" DOUBLE PRECISION NOT NULL,
+    "boxX2" DOUBLE PRECISION NOT NULL,
+    "boxY2" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Defect_pkey" PRIMARY KEY ("id")
+);
