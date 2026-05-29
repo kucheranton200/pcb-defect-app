@@ -44,10 +44,12 @@ export class DefectsService {
     }
 
     const storedFile = await this.files.saveDefectImage(image);
+    const title = await this.generateTitle(dto.className);
 
     return this.prisma.defect.create({
       data: {
         ...storedFile,
+        title,
         className: dto.className,
         confidence: Number(dto.confidence),
         boxX1: Number(dto.boxX1),
@@ -64,10 +66,12 @@ export class DefectsService {
   ): Promise<Defect> {
     const storedFile = await this.files.saveDefectImageFromPath(framePath);
     const [boxX1, boxY1, boxX2, boxY2] = detection.box;
+    const title = await this.generateTitle(detection.class);
 
     return this.prisma.defect.create({
       data: {
         ...storedFile,
+        title,
         className: detection.class,
         confidence: detection.confidence,
         boxX1,
@@ -91,5 +95,17 @@ export class DefectsService {
     const defect = await this.findOne(id);
     await this.prisma.defect.delete({ where: { id } });
     await this.files.deleteIfExists(defect.imagePath);
+  }
+
+  private async generateTitle(className: string): Promise<string> {
+    const index = (await this.prisma.defect.count()) + 1;
+    const normalizedClass = className
+      .split(/[_\s-]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join('');
+    const hash = Math.random().toString(36).slice(2, 10);
+
+    return `${index}-Defect-${normalizedClass}-${hash}`;
   }
 }

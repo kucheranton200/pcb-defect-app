@@ -4,7 +4,7 @@ export class UpdateDefectDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  className?: string;
+  title?: string;
 
   @IsOptional()
   @IsNumber()

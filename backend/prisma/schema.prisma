@@ -9,6 +9,7 @@ datasource db {
 
 model Defect {
   id         String   @id @default(uuid())
+  title      String   @unique
   imagePath  String
   imageName  String
   className  String

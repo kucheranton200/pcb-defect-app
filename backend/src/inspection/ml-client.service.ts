@@ -7,13 +7,19 @@ import { ModelDetection } from '../defects/defects.service';
 
 interface MlPredictResponse {
   detections: ModelDetection[];
+  annotatedImageBase64?: string | null;
+}
+
+export interface MlPrediction {
+  detections: ModelDetection[];
+  annotatedImageBase64?: string | null;
 }
 
 @Injectable()
 export class MlClientService {
   constructor(private readonly config: ConfigService) {}
 
-  async predict(imagePath: string): Promise<ModelDetection[]> {
+  async predict(imagePath: string): Promise<MlPrediction> {
     const mlServiceUrl = this.config.get<string>(
       'ML_SERVICE_URL',
       'http://localhost:8000',
@@ -31,6 +37,9 @@ export class MlClientService {
       },
     );
 
-    return response.data.detections ?? [];
+    return {
+      detections: response.data.detections ?? [],
+      annotatedImageBase64: response.data.annotatedImageBase64,
+    };
   }
 }

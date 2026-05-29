@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { DefectsModule } from '../defects/defects.module';
 import { InspectionController } from './inspection.controller';
+import { InspectionEventsService } from './inspection-events.service';
 import { InspectionService } from './inspection.service';
 import { MlClientService } from './ml-client.service';
 
 @Module({
   imports: [MulterModule, DefectsModule],
   controllers: [InspectionController],
-  providers: [InspectionService, MlClientService],
+  providers: [InspectionService, MlClientService, InspectionEventsService],
 })
 export class InspectionModule {}

@@ -1,0 +1,5 @@
+.env
+.venv/
+.venv-win
+frames/
+__pycache__/

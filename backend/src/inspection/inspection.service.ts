@@ -4,7 +4,8 @@ import { spawn } from 'child_process';
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { DefectsService } from '../defects/defects.service';
+import { DefectsService, ModelDetection } from '../defects/defects.service';
+import { InspectionEventsService } from './inspection-events.service';
 import { MlClientService } from './ml-client.service';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class InspectionService {
     private readonly config: ConfigService,
     private readonly defectsService: DefectsService,
     private readonly mlClient: MlClientService,
+    private readonly inspectionEvents: InspectionEventsService,
   ) {}
 
   async inspectVideoChunk(video: Express.Multer.File) {
@@ -34,16 +36,24 @@ export class InspectionService {
 
       for (const framePath of framePaths) {
         analyzedFrames += 1;
-        const detections = await this.mlClient.predict(framePath);
+        const prediction = await this.mlClient.predict(framePath);
+        const detections = prediction.detections;
 
         if (detections.length === 0) {
           await fs.rm(framePath, { force: true });
           continue;
         }
 
+        const imageToSavePath = prediction.annotatedImageBase64
+          ? await this.saveAnnotatedImage(workDir, prediction.annotatedImageBase64)
+          : framePath;
+
         for (const detection of detections) {
           savedDefects.push(
-            await this.defectsService.createFromDetection(framePath, detection),
+            await this.defectsService.createFromDetection(
+              imageToSavePath,
+              detection,
+            ),
           );
         }
       }
@@ -55,6 +65,64 @@ export class InspectionService {
       };
     } finally {
       await fs.rm(workDir, { recursive: true, force: true });
+    }
+  }
+
+  async acceptFrameResult(image: Express.Multer.File, detectionsJson = '[]') {
+    if (!image) {
+      throw new BadRequestException('Image file is required');
+    }
+
+    const detections = this.parseDetections(detectionsJson);
+    const tempRoot = this.config.get<string>('TEMP_DIR', 'storage/tmp');
+    const workDir = join(tempRoot, randomUUID());
+    await fs.mkdir(workDir, { recursive: true });
+
+    const framePath = join(workDir, image.originalname || `${randomUUID()}.jpg`);
+    await fs.writeFile(framePath, image.buffer);
+
+    try {
+      const savedDefects = [];
+
+      for (const detection of detections) {
+        savedDefects.push(
+          await this.defectsService.createFromDetection(framePath, detection),
+        );
+      }
+
+      this.inspectionEvents.publish({
+        id: randomUUID(),
+        status: detections.length > 0 ? 'rejected' : 'accepted',
+        imageBase64: image.buffer.toString('base64'),
+        detections,
+        savedDefects,
+        createdAt: new Date().toISOString(),
+      });
+
+      return {
+        savedDefectsCount: savedDefects.length,
+        savedDefects,
+      };
+    } finally {
+      await fs.rm(workDir, { recursive: true, force: true });
+    }
+  }
+
+  private async saveAnnotatedImage(
+    workDir: string,
+    annotatedImageBase64: string,
+  ): Promise<string> {
+    const annotatedPath = join(workDir, `annotated-${randomUUID()}.jpg`);
+    await fs.writeFile(annotatedPath, Buffer.from(annotatedImageBase64, 'base64'));
+    return annotatedPath;
+  }
+
+  private parseDetections(detectionsJson: string): ModelDetection[] {
+    try {
+      const parsed = JSON.parse(detectionsJson);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      throw new BadRequestException('Invalid detections JSON');
     }
   }
 
